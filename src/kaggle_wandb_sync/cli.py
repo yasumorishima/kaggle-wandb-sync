@@ -8,6 +8,7 @@ from kaggle_wandb_sync.commands.poll import poll
 from kaggle_wandb_sync.commands.output import output
 from kaggle_wandb_sync.commands.sync import sync
 from kaggle_wandb_sync.commands.run import run
+from kaggle_wandb_sync.commands.score import score
 
 
 @click.group()
@@ -29,3 +30,4 @@ main.add_command(poll)
 main.add_command(output)
 main.add_command(sync)
 main.add_command(run)
+main.add_command(score)

@@ -6,6 +6,7 @@ from click.testing import CliRunner
 
 from kaggle_wandb_sync.cli import main
 from kaggle_wandb_sync._utils import parse_kernel_status, is_terminal, normalize_path
+from kaggle_wandb_sync.commands.score import _parse_run_path
 
 
 runner = CliRunner()
@@ -14,7 +15,7 @@ runner = CliRunner()
 def test_version():
     result = runner.invoke(main, ["--version"])
     assert result.exit_code == 0
-    assert "0.1.2" in result.output
+    assert "0.1.3" in result.output
 
 
 def test_help():
@@ -80,6 +81,49 @@ class TestNormalizePath:
 
     def test_single_slash(self):
         assert normalize_path("/") == "/"
+
+
+class TestParseRunPath:
+    def test_full_url(self):
+        url = "https://wandb.ai/fw_yasu11-personal/stanford-rna-3d-folding-2/runs/f75vzytz"
+        assert _parse_run_path(url) == "fw_yasu11-personal/stanford-rna-3d-folding-2/f75vzytz"
+
+    def test_full_url_with_query(self):
+        url = "https://wandb.ai/fw_yasu11-personal/my-proj/runs/abc123?nw=nwuser"
+        assert _parse_run_path(url) == "fw_yasu11-personal/my-proj/abc123"
+
+    def test_path_format(self):
+        assert _parse_run_path("entity/project/abc123") == "entity/project/abc123"
+
+    def test_bare_id(self):
+        assert _parse_run_path("abc123") == "abc123"
+
+
+class TestScoreCommand:
+    def test_help(self):
+        result = runner.invoke(main, ["score", "--help"])
+        assert result.exit_code == 0
+        assert "tm-score" in result.output
+        assert "rank" in result.output
+
+    def test_score_in_help(self):
+        result = runner.invoke(main, ["--help"])
+        assert "score" in result.output
+
+    def test_bare_id_without_project(self):
+        result = runner.invoke(main, ["score", "abc123", "--tm-score", "0.25"])
+        assert result.exit_code == 1
+        assert "project" in result.output
+
+    def test_no_metrics(self):
+        result = runner.invoke(main, ["score", "entity/project/abc123"])
+        assert result.exit_code == 1
+        assert "provide at least one" in result.output
+
+    def test_invalid_metric_format(self):
+        result = runner.invoke(main, ["score", "entity/project/abc123", "-m", "invalid"])
+        assert result.exit_code == 1
+        assert "KEY=VALUE" in result.output
 
 
 class TestPush:
