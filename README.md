@@ -20,7 +20,7 @@ Kaggle Notebooks run in an isolated environment with internet access disabled fo
 pip install kaggle-wandb-sync
 ```
 
-**Prerequisites:** [Kaggle API credentials](https://www.kaggle.com/docs/api) (`~/.kaggle/kaggle.json`) and a W&B API key.
+**Prerequisites:** [Kaggle API credentials](https://www.kaggle.com/docs/api) (`~/.kaggle/kaggle.json`) and a W&B API key (`WANDB_API_KEY` env var, or run `wandb login` once to save credentials to `~/.netrc`).
 
 ## Quick Start
 
@@ -121,7 +121,7 @@ kaggle-wandb-sync run [DIRECTORY] [OPTIONS]
 | `--output-dir`, `-o` | `./kaggle_output` | Directory for downloaded files |
 | `--poll-interval` | `30` | Seconds between status checks |
 | `--max-attempts` | `60` | Max poll attempts (30min total) |
-| `--skip-push` | off | Skip push, re-run output+sync only |
+| `--skip-push` | off | Skip push step (use when notebook has already finished running) |
 | `--skip-sync` | off | Download output only, skip W&B sync |
 
 ### `push` — Push notebook
@@ -157,6 +157,12 @@ Finds all `offline-run-*` directories and runs `wandb sync` on each.
 ## Known Issues
 
 - **Windows encoding:** Prefix commands with `PYTHONUTF8=1` if you see encoding errors on Windows.
+
+- **Windows PATH (Microsoft Store Python):** If `kaggle-wandb-sync: command not found` in Git Bash, add the Scripts directory to your PATH:
+  ```bash
+  # Add to ~/.bashrc
+  export PATH="$PATH:/c/Users/<your-username>/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0/LocalCache/local-packages/Python312/Scripts"
+  ```
 
 ## License
 

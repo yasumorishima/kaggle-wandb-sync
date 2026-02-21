@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kaggle-wandb-sync"
-version = "0.1.0"
+version = "0.1.1"
 description = "A CLI tool to sync W&B offline runs from Kaggle Notebooks via GitHub Actions"
 readme = "README.md"
 license = "MIT"
