@@ -164,6 +164,8 @@ Finds all `offline-run-*` directories and runs `wandb sync` on each.
   export PATH="$PATH:/c/Users/<your-username>/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0/LocalCache/local-packages/Python312/Scripts"
   ```
 
+- **Git Bash path format (fixed in v0.1.2):** Git Bash converts paths like `C:/Users/...` to `/c/Users/...`, which Python cannot resolve. As of v0.1.2, all path arguments are automatically converted to Windows format.
+
 ## License
 
 MIT

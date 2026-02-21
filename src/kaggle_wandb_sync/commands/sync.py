@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from kaggle_wandb_sync._utils import find_wandb
+from kaggle_wandb_sync._utils import find_wandb, normalize_path
 
 
 @click.command()
@@ -23,7 +23,7 @@ def sync(output_dir):
         click.echo("Error: wandb command not found. Run: pip install wandb", err=True)
         raise SystemExit(1)
 
-    output_path = Path(output_dir)
+    output_path = Path(normalize_path(output_dir))
     if not output_path.exists():
         click.echo(f"Error: {output_path} does not exist.", err=True)
         raise SystemExit(1)

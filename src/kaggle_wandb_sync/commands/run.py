@@ -6,7 +6,7 @@ from pathlib import Path
 
 import click
 
-from kaggle_wandb_sync._utils import find_kaggle, find_wandb, get_kernel_status, is_terminal
+from kaggle_wandb_sync._utils import find_kaggle, find_wandb, get_kernel_status, is_terminal, normalize_path
 from kaggle_wandb_sync.commands.push import push as push_cmd
 from kaggle_wandb_sync.commands.poll import poll as poll_cmd
 from kaggle_wandb_sync.commands.output import output as output_cmd
@@ -27,7 +27,7 @@ def run(directory, kernel_id, output_dir, poll_interval, max_attempts, skip_push
     DIRECTORY must contain kernel-metadata.json.
     Requires WANDB_API_KEY environment variable (or prior 'wandb login').
     """
-    dir_path = Path(directory)
+    dir_path = Path(normalize_path(directory))
     metadata_path = dir_path / "kernel-metadata.json"
 
     if not metadata_path.exists():

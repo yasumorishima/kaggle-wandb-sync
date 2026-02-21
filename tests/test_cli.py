@@ -5,7 +5,7 @@ import json
 from click.testing import CliRunner
 
 from kaggle_wandb_sync.cli import main
-from kaggle_wandb_sync._utils import parse_kernel_status, is_terminal
+from kaggle_wandb_sync._utils import parse_kernel_status, is_terminal, normalize_path
 
 
 runner = CliRunner()
@@ -14,7 +14,7 @@ runner = CliRunner()
 def test_version():
     result = runner.invoke(main, ["--version"])
     assert result.exit_code == 0
-    assert "0.1.0" in result.output
+    assert "0.1.2" in result.output
 
 
 def test_help():
@@ -56,6 +56,30 @@ class TestUtils:
 
     def test_is_terminal_empty(self):
         assert is_terminal("") is False
+
+
+class TestNormalizePath:
+    def test_git_bash_c_drive(self):
+        assert normalize_path("/c/Users/foo/bar") == "C:/Users/foo/bar"
+
+    def test_git_bash_d_drive(self):
+        assert normalize_path("/d/Projects/my-repo") == "D:/Projects/my-repo"
+
+    def test_windows_path_unchanged(self):
+        assert normalize_path("C:/Users/foo/bar") == "C:/Users/foo/bar"
+
+    def test_relative_path_unchanged(self):
+        assert normalize_path("my-notebook/") == "my-notebook/"
+
+    def test_dot_path_unchanged(self):
+        assert normalize_path(".") == "."
+
+    def test_unix_absolute_path_unchanged(self):
+        """Unix paths like /home/user are not drive letters (2nd char is not a letter followed by /)."""
+        assert normalize_path("/home/user/project") == "/home/user/project"
+
+    def test_single_slash(self):
+        assert normalize_path("/") == "/"
 
 
 class TestPush:

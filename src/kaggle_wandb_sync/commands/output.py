@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from kaggle_wandb_sync._utils import find_kaggle
+from kaggle_wandb_sync._utils import find_kaggle, normalize_path
 
 
 @click.command()
@@ -23,7 +23,7 @@ def output(kernel_id, output_dir):
         click.echo("Error: kaggle command not found. Run: pip install kaggle", err=True)
         raise SystemExit(1)
 
-    output_path = Path(output_dir)
+    output_path = Path(normalize_path(output_dir))
     output_path.mkdir(parents=True, exist_ok=True)
 
     click.echo(f"Downloading output from {kernel_id} to {output_path}...")

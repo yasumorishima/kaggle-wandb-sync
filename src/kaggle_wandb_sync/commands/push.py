@@ -7,7 +7,7 @@ from pathlib import Path
 
 import click
 
-from kaggle_wandb_sync._utils import find_kaggle, get_kernel_status, is_terminal
+from kaggle_wandb_sync._utils import find_kaggle, get_kernel_status, is_terminal, normalize_path
 
 
 @click.command()
@@ -21,7 +21,7 @@ def push(directory, wait_interval, max_wait, dry_run):
     DIRECTORY must contain kernel-metadata.json.
     If the kernel is currently running, waits until it finishes to avoid a 409 conflict.
     """
-    dir_path = Path(directory)
+    dir_path = Path(normalize_path(directory))
     metadata_path = dir_path / "kernel-metadata.json"
 
     if not metadata_path.exists():
