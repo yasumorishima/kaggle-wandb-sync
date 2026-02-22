@@ -92,7 +92,7 @@ def score(run_id, project, tm_score, rank, metric):
         click.echo(f"Error: could not find W&B run '{run_path}': {e}", err=True)
         raise SystemExit(1)
 
-    updates = {}
+    updates = {'submitted': True}
     if tm_score is not None:
         updates['tm_score'] = tm_score
     if rank is not None:
