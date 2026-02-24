@@ -85,12 +85,12 @@ class TestNormalizePath:
 
 class TestParseRunPath:
     def test_full_url(self):
-        url = "https://wandb.ai/fw_yasu11-personal/stanford-rna-3d-folding-2/runs/f75vzytz"
-        assert _parse_run_path(url) == "fw_yasu11-personal/stanford-rna-3d-folding-2/f75vzytz"
+        url = "https://wandb.ai/test-user/my-project/runs/f75vzytz"
+        assert _parse_run_path(url) == "test-user/my-project/f75vzytz"
 
     def test_full_url_with_query(self):
-        url = "https://wandb.ai/fw_yasu11-personal/my-proj/runs/abc123?nw=nwuser"
-        assert _parse_run_path(url) == "fw_yasu11-personal/my-proj/abc123"
+        url = "https://wandb.ai/test-user/my-proj/runs/abc123?nw=nwuser"
+        assert _parse_run_path(url) == "test-user/my-proj/abc123"
 
     def test_path_format(self):
         assert _parse_run_path("entity/project/abc123") == "entity/project/abc123"
