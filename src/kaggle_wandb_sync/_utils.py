@@ -1,9 +1,11 @@
 """Shared utilities for kaggle-wandb-sync."""
 
+import json
 import re
 import shutil
 import subprocess
 import sysconfig
+import tempfile
 from pathlib import Path
 
 
@@ -76,3 +78,33 @@ def get_kernel_status(kaggle_cmd: str, kernel_id: str) -> str:
     )
     raw = result.stdout + result.stderr
     return parse_kernel_status(raw)
+
+
+def show_kernel_diagnostics(kaggle_cmd: str, kernel_id: str) -> None:
+    """Download kernel output and print stdout + last 30 stderr lines.
+
+    Useful for diagnosing kernel failures without opening the Kaggle UI.
+    kernel_id format: username/kernel-slug
+    """
+    slug = kernel_id.split("/")[-1]
+    with tempfile.TemporaryDirectory() as tmpdir:
+        subprocess.run(
+            [kaggle_cmd, "kernels", "output", kernel_id, "-p", tmpdir],
+            capture_output=True,
+        )
+        log_file = Path(tmpdir) / f"{slug}.log"
+        if not log_file.exists():
+            print("(no kernel log found)")
+            return
+
+        entries = json.loads(log_file.read_text())
+
+        stdout_lines = [e["data"] for e in entries if e.get("stream_name") == "stdout"]
+        if stdout_lines:
+            print("--- kernel stdout ---")
+            print("".join(stdout_lines), end="")
+
+        stderr_lines = [e["data"] for e in entries if e.get("stream_name") == "stderr"]
+        if stderr_lines:
+            print("\n--- last 30 stderr lines ---")
+            print("".join(stderr_lines[-30:]), end="")

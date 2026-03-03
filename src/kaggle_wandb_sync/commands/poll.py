@@ -4,7 +4,7 @@ import time
 
 import click
 
-from kaggle_wandb_sync._utils import find_kaggle, get_kernel_status, is_terminal
+from kaggle_wandb_sync._utils import find_kaggle, get_kernel_status, is_terminal, show_kernel_diagnostics
 
 
 @click.command()
@@ -30,6 +30,8 @@ def poll(kernel_id, interval, max_attempts):
         if is_terminal(status):
             click.echo(f"Kernel finished with status: {status}")
             if "ERROR" in status.upper() or "CANCEL" in status.upper():
+                click.echo("\n=== Kernel diagnostics ===")
+                show_kernel_diagnostics(kaggle_cmd, kernel_id)
                 raise SystemExit(1)
             return
 
