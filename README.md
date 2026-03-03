@@ -109,6 +109,8 @@ jobs:
 
 ## Commands
 
+<!-- commands:start -->
+
 ### `run` — Full pipeline (recommended)
 
 ```
@@ -140,6 +142,8 @@ kaggle-wandb-sync poll KERNEL_ID [--interval 30] [--max-attempts 60]
 
 Exits with code 1 if the kernel finishes with ERROR or CANCEL.
 
+**v0.1.5+:** On ERROR or CANCEL, automatically downloads the kernel log and prints stdout + last 30 stderr lines, so you can diagnose failures without opening the Kaggle UI.
+
 ### `output` — Download output
 
 ```
@@ -153,6 +157,8 @@ kaggle-wandb-sync sync [OUTPUT_DIR]
 ```
 
 Finds all `offline-run-*` directories and runs `wandb sync` on each.
+
+<!-- commands:end -->
 
 ## Known Issues
 
