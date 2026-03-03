@@ -38,8 +38,8 @@ kaggle-wandb-sync run my-notebook/
 
 ```bash
 kaggle-wandb-sync push   my-notebook/                      # push (with 409 protection)
-kaggle-wandb-sync poll   yasunorim/my-notebook             # wait for COMPLETE
-kaggle-wandb-sync output yasunorim/my-notebook             # download output
+kaggle-wandb-sync poll   username/my-notebook              # wait for COMPLETE
+kaggle-wandb-sync output username/my-notebook              # download output
 kaggle-wandb-sync sync   ./kaggle_output                   # wandb sync
 ```
 
