@@ -29,10 +29,10 @@ def _parse_run_path(run_id: str) -> str:
 @click.command()
 @click.argument("run_id")
 @click.option("--project", "-p", default=None, help="W&B project path (entity/project). Required if RUN_ID is a bare ID.")
-@click.option("--tm-score", type=float, default=None, help="TM-score from Kaggle submission.")
+@click.option("--score", "kaggle_score", type=float, default=None, help="Kaggle public LB score.")
 @click.option("--rank", type=int, default=None, help="Leaderboard rank.")
 @click.option("--metric", "-m", multiple=True, metavar="KEY=VALUE", help="Additional metric (can be repeated, e.g. -m auc=0.95 -m loss=0.3).")
-def score(run_id, project, tm_score, rank, metric):
+def score(run_id, project, kaggle_score, rank, metric):
     """Log Kaggle submission scores to a W&B run.
 
     RUN_ID can be:
@@ -42,9 +42,9 @@ def score(run_id, project, tm_score, rank, metric):
 
     Examples:
 
-      kaggle-wandb-sync score https://wandb.ai/me/my-proj/runs/abc123 --tm-score 0.25 --rank 100
+      kaggle-wandb-sync score https://wandb.ai/me/my-proj/runs/abc123 --score 0.127 --rank 200
 
-      kaggle-wandb-sync score abc123 --project me/my-proj --tm-score 0.25
+      kaggle-wandb-sync score abc123 --project me/my-proj --score 0.127
 
       kaggle-wandb-sync score abc123 --project me/my-proj -m auc=0.95 -m loss=0.3
     """
@@ -80,8 +80,8 @@ def score(run_id, project, tm_score, rank, metric):
         except ValueError:
             extra[key] = val
 
-    if tm_score is None and rank is None and not extra:
-        click.echo("Error: provide at least one of --tm-score, --rank, or --metric.", err=True)
+    if kaggle_score is None and rank is None and not extra:
+        click.echo("Error: provide at least one of --score, --rank, or --metric.", err=True)
         raise SystemExit(1)
 
     # Update run summary
@@ -93,8 +93,8 @@ def score(run_id, project, tm_score, rank, metric):
         raise SystemExit(1)
 
     updates = {'submitted': True}
-    if tm_score is not None:
-        updates['tm_score'] = tm_score
+    if kaggle_score is not None:
+        updates['kaggle_score'] = kaggle_score
     if rank is not None:
         updates['kaggle_rank'] = rank
     updates.update(extra)

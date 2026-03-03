@@ -158,6 +158,23 @@ kaggle-wandb-sync sync [OUTPUT_DIR]
 
 Finds all `offline-run-*` directories and runs `wandb sync` on each.
 
+### `score` — Record Kaggle LB score to W&B
+
+```
+kaggle-wandb-sync score RUN_ID [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--score` | Kaggle public LB score (float) |
+| `--rank` | Leaderboard rank (int) |
+| `--metric KEY=VALUE` | Additional metric (repeatable) |
+| `--project entity/project` | W&B project path (for bare run IDs) |
+
+```bash
+kaggle-wandb-sync score https://wandb.ai/me/my-proj/runs/abc123 --score 0.127 --rank 200
+```
+
 <!-- commands:end -->
 
 ## Known Issues
