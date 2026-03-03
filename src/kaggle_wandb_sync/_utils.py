@@ -1,15 +1,30 @@
 """Shared utilities for kaggle-wandb-sync."""
 
 import json
+import os
 import re
 import shutil
 import subprocess
 import sysconfig
 import tempfile
+import urllib.request
 from pathlib import Path
 
 
 TERMINAL_STATUSES = ("COMPLETE", "ERROR", "CANCEL")
+
+
+def notify_discord(message: str) -> None:
+    """Send a message to Discord via DISCORD_WEBHOOK_URL env var. No-op if not set."""
+    url = os.environ.get("DISCORD_WEBHOOK_URL", "")
+    if not url:
+        return
+    try:
+        data = json.dumps({"content": message}).encode()
+        req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=10)
+    except Exception:
+        pass  # notifications are best-effort
 
 
 def normalize_path(path_str: str) -> str:
@@ -96,6 +111,7 @@ def wait_and_record_score(
 
     print(f"Waiting for a new submission to '{competition_slug}' ...")
     print("Please submit via browser now. This step will wait up to 2 hours.")
+    notify_discord(f"⚡ **W&B sync完了！ブラウザで提出してください**\nCompetition: `{competition_slug}`")
 
     def get_submissions():
         result = subprocess.run(
@@ -152,6 +168,10 @@ def wait_and_record_score(
         run.summary.update({"submitted": True, "kaggle_score": float(score)})
         print(f"  kaggle_score = {score}")
         print(f"  submitted = True")
+        notify_discord(
+            f"✅ **スコア記録完了！**\nCompetition: `{competition_slug}`\n"
+            f"Score: `{score}`\nW&B: https://wandb.ai/{run_path}"
+        )
     except Exception as e:
         print(f"Error recording to W&B: {e}")
 

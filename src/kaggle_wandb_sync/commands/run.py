@@ -6,7 +6,7 @@ from pathlib import Path
 
 import click
 
-from kaggle_wandb_sync._utils import find_kaggle, find_wandb, get_kernel_status, is_terminal, normalize_path, wait_and_record_score
+from kaggle_wandb_sync._utils import find_kaggle, find_wandb, get_kernel_status, is_terminal, normalize_path, notify_discord, wait_and_record_score
 from kaggle_wandb_sync.commands.push import push as push_cmd
 from kaggle_wandb_sync.commands.poll import poll as poll_cmd
 from kaggle_wandb_sync.commands.output import output as output_cmd
@@ -101,3 +101,5 @@ def run(directory, kernel_id, output_dir, poll_interval, max_attempts, skip_push
 
     click.echo("")
     click.echo("Pipeline complete.")
+    if not competition_slug:
+        notify_discord(f"✅ **パイプライン完了**\nKernel: `{kernel_id}`")
