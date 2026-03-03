@@ -125,6 +125,7 @@ kaggle-wandb-sync run [DIRECTORY] [OPTIONS]
 | `--max-attempts` | `60` | Max poll attempts (30min total) |
 | `--skip-push` | off | Skip push step (use when notebook has already finished running) |
 | `--skip-sync` | off | Download output only, skip W&B sync |
+| `--competition-slug` | — | Competition slug to auto-record LB score after browser submission (e.g. `march-machine-learning-mania-2026`) |
 
 ### `push` — Push notebook
 

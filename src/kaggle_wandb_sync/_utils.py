@@ -80,6 +80,82 @@ def get_kernel_status(kaggle_cmd: str, kernel_id: str) -> str:
     return parse_kernel_status(raw)
 
 
+def wait_and_record_score(
+    kaggle_cmd: str,
+    competition_slug: str,
+    output_dir: str,
+    poll_interval: int = 30,
+    max_attempts: int = 240,
+) -> None:
+    """Poll Kaggle submissions until a new scored entry appears, then record to W&B.
+
+    Waits up to max_attempts * poll_interval seconds (default 2 hours).
+    Reads W&B entity/project/run_id from wandb-metadata.json in output_dir.
+    """
+    import time
+
+    print(f"Waiting for a new submission to '{competition_slug}' ...")
+    print("Please submit via browser now. This step will wait up to 2 hours.")
+
+    def get_submissions():
+        result = subprocess.run(
+            [kaggle_cmd, "competitions", "submissions", "list",
+             "-c", competition_slug, "--csv"],
+            capture_output=True, text=True,
+        )
+        return [l for l in result.stdout.splitlines() if l.strip()][1:]  # skip header
+
+    before_count = len(get_submissions())
+    print(f"Current submission count: {before_count}")
+
+    score = None
+    for i in range(1, max_attempts + 1):
+        time.sleep(poll_interval)
+        lines = get_submissions()
+        if len(lines) > before_count:
+            for line in lines:
+                parts = line.split(",")
+                if len(parts) >= 5:
+                    status = parts[3].strip().lower()
+                    pub_score = parts[4].strip()
+                    if status == "complete" and pub_score not in ("", "None", "none"):
+                        score = pub_score
+                        break
+            if score:
+                print(f"New submission detected! publicScore={score}")
+                break
+        print(f"Attempt {i}/{max_attempts}: waiting for submission...")
+
+    if not score:
+        print("No new scored submission detected. Skipping W&B score recording.")
+        return
+
+    metadata_path = next(Path(output_dir).rglob("wandb-metadata.json"), None)
+    if not metadata_path:
+        print("No wandb-metadata.json found. Skipping W&B recording.")
+        return
+
+    meta = json.loads(metadata_path.read_text())
+    entity = meta.get("entity", "")
+    project = meta.get("project", "")
+    run_id = meta.get("run_id", "")
+    if not (entity and project and run_id):
+        print(f"Incomplete W&B metadata: {meta}. Skipping.")
+        return
+
+    run_path = f"{entity}/{project}/{run_id}"
+    print(f"Recording to W&B run: {run_path}")
+    try:
+        import wandb
+        api = wandb.Api()
+        run = api.run(run_path)
+        run.summary.update({"submitted": True, "kaggle_score": float(score)})
+        print(f"  kaggle_score = {score}")
+        print(f"  submitted = True")
+    except Exception as e:
+        print(f"Error recording to W&B: {e}")
+
+
 def show_kernel_diagnostics(kaggle_cmd: str, kernel_id: str) -> None:
     """Download kernel output and print stdout + last 30 stderr lines.
 

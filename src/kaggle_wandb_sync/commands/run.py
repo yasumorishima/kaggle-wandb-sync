@@ -6,7 +6,7 @@ from pathlib import Path
 
 import click
 
-from kaggle_wandb_sync._utils import find_kaggle, find_wandb, get_kernel_status, is_terminal, normalize_path
+from kaggle_wandb_sync._utils import find_kaggle, find_wandb, get_kernel_status, is_terminal, normalize_path, wait_and_record_score
 from kaggle_wandb_sync.commands.push import push as push_cmd
 from kaggle_wandb_sync.commands.poll import poll as poll_cmd
 from kaggle_wandb_sync.commands.output import output as output_cmd
@@ -21,8 +21,9 @@ from kaggle_wandb_sync.commands.sync import sync as sync_cmd
 @click.option("--max-attempts", default=60, show_default=True, help="Maximum poll attempts.")
 @click.option("--skip-push", is_flag=True, default=False, help="Skip push (re-run output+sync only).")
 @click.option("--skip-sync", is_flag=True, default=False, help="Skip wandb sync (download output only).")
-def run(directory, kernel_id, output_dir, poll_interval, max_attempts, skip_push, skip_sync):
-    """Run the full pipeline: push → poll → output → wandb sync.
+@click.option("--competition-slug", default=None, help="Competition slug to auto-record LB score after submission (e.g. march-machine-learning-mania-2026).")
+def run(directory, kernel_id, output_dir, poll_interval, max_attempts, skip_push, skip_sync, competition_slug):
+    """Run the full pipeline: push → poll → output → wandb sync → wait for submission → record LB score.
 
     DIRECTORY must contain kernel-metadata.json.
     Requires WANDB_API_KEY environment variable (or prior 'wandb login').
@@ -76,13 +77,27 @@ def run(directory, kernel_id, output_dir, poll_interval, max_attempts, skip_push
     click.echo("=" * 50)
     ctx.invoke(output_cmd, kernel_id=kernel_id, output_dir=output_dir)
 
+    total_steps = 5 if competition_slug else 4
+
     # Step 4: Sync
     if not skip_sync:
         click.echo("")
         click.echo("=" * 50)
-        click.echo("Step 4/4: W&B sync")
+        click.echo(f"Step 4/{total_steps}: W&B sync")
         click.echo("=" * 50)
         ctx.invoke(sync_cmd, output_dir=output_dir)
+
+    # Step 5: Wait for submission and record LB score
+    if competition_slug:
+        click.echo("")
+        click.echo("=" * 50)
+        click.echo(f"Step 5/{total_steps}: Wait for submission → record LB score")
+        click.echo("=" * 50)
+        wait_and_record_score(
+            kaggle_cmd=kaggle_cmd,
+            competition_slug=competition_slug,
+            output_dir=output_dir,
+        )
 
     click.echo("")
     click.echo("Pipeline complete.")
