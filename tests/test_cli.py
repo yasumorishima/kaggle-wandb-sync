@@ -15,7 +15,7 @@ runner = CliRunner()
 def test_version():
     result = runner.invoke(main, ["--version"])
     assert result.exit_code == 0
-    assert "0.1.3" in result.output
+    assert "0.1.9" in result.output
 
 
 def test_help():
@@ -103,7 +103,7 @@ class TestScoreCommand:
     def test_help(self):
         result = runner.invoke(main, ["score", "--help"])
         assert result.exit_code == 0
-        assert "tm-score" in result.output
+        assert "score" in result.output
         assert "rank" in result.output
 
     def test_score_in_help(self):
@@ -111,7 +111,7 @@ class TestScoreCommand:
         assert "score" in result.output
 
     def test_bare_id_without_project(self):
-        result = runner.invoke(main, ["score", "abc123", "--tm-score", "0.25"])
+        result = runner.invoke(main, ["score", "abc123", "--score", "0.25"])
         assert result.exit_code == 1
         assert "project" in result.output
 

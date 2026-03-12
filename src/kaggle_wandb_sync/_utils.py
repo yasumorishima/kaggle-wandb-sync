@@ -151,7 +151,11 @@ def wait_and_record_score(
         print("No wandb-metadata.json found. Skipping W&B recording.")
         return
 
-    meta = json.loads(metadata_path.read_text())
+    try:
+        meta = json.loads(metadata_path.read_text())
+    except (json.JSONDecodeError, ValueError) as e:
+        print(f"Failed to parse wandb-metadata.json: {e}")
+        return
     entity = meta.get("entity", "")
     project = meta.get("project", "")
     run_id = meta.get("run_id", "")
@@ -193,7 +197,14 @@ def show_kernel_diagnostics(kaggle_cmd: str, kernel_id: str) -> None:
             print("(no kernel log found)")
             return
 
-        entries = json.loads(log_file.read_text())
+        try:
+            entries = json.loads(log_file.read_text())
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"Kernel log is not valid JSON: {e}")
+            print("--- raw log (last 30 lines) ---")
+            raw_lines = log_file.read_text().splitlines()
+            print("\n".join(raw_lines[-30:]))
+            return
 
         stdout_lines = [e["data"] for e in entries if e.get("stream_name") == "stdout"]
         if stdout_lines:
