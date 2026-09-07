@@ -92,6 +92,12 @@ class TestParseRunPath:
         url = "https://wandb.ai/test-user/my-proj/runs/abc123?nw=nwuser"
         assert _parse_run_path(url) == "test-user/my-proj/abc123"
 
+    def test_full_url_other_host(self):
+        # The sign-in / app domain can change (W&B moved hosts on 2026-09-30);
+        # a run URL copied from any host must still parse.
+        url = "https://wandb.example.com/test-user/my-proj/runs/abc123"
+        assert _parse_run_path(url) == "test-user/my-proj/abc123"
+
     def test_path_format(self):
         assert _parse_run_path("entity/project/abc123") == "entity/project/abc123"
 

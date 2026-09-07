@@ -9,12 +9,12 @@ def _parse_run_path(run_id: str) -> str:
     """Parse run_id into W&B run path (entity/project/run_id).
 
     Accepts:
-      - Full URL: https://wandb.ai/entity/project/runs/abc123
+      - Full URL: https://wandb.ai/entity/project/runs/abc123 (any W&B host)
       - Path:     entity/project/abc123
       - ID only:  abc123  (requires --project)
     """
     # Full W&B URL
-    m = re.match(r'https?://wandb\.ai/([^/]+)/([^/]+)/runs/([^/?]+)', run_id)
+    m = re.match(r'https?://[^/]+/([^/]+)/([^/]+)/runs/([^/?]+)', run_id)
     if m:
         return f"{m.group(1)}/{m.group(2)}/{m.group(3)}"
 
