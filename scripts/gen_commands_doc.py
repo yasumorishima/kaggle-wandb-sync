@@ -22,6 +22,16 @@ BEGIN_MARKER = "<!-- commands:start -->"
 END_MARKER = "<!-- commands:end -->"
 
 
+def _arg_token(arg: click.Argument) -> str:
+    """`NAME` for a required argument, `[NAME]` for an optional one.
+
+    Every argument used to be rendered as optional, which was wrong for 9 of
+    the 12 arguments across these CLIs.
+    """
+    name = arg.name.upper()
+    return name if arg.required else f"[{name}]"
+
+
 def option_row(param: click.Option) -> str:
     names = ", ".join(f"`{n}`" for n in param.opts)
     return f"| {names} | {param.help or ''}{_default_suffix(param)} |"
@@ -36,7 +46,9 @@ def _renderable_default(param: click.Option):
     developer had. Allow-list the types we can actually render instead of
     trying to enumerate the sentinels.
     """
-    d = param.default
+    # to_info_dict() (click >= 8.0) normalises the "no default" sentinel that
+    # click >= 8.3 uses, and resolves lazily-computed flag defaults in 8.5.
+    d = param.to_info_dict().get("default")
     if d is None or d is False or param.multiple or callable(d):
         return None
     if not isinstance(d, (str, int, float, bool)):
@@ -65,7 +77,7 @@ def generate_commands_section(cmd_group: click.Group) -> str:
         options = [p for p in cmd.params if isinstance(p, click.Option)]
         args = [p for p in cmd.params if isinstance(p, click.Argument)]
         if args:
-            arg_names = " ".join(f"[{a.name.upper()}]" for a in args)
+            arg_names = " ".join(_arg_token(a) for a in args)
             lines.append(f"```\nkaggle-wandb-sync {name} {arg_names} [OPTIONS]\n```")
             lines.append("")
         if options:

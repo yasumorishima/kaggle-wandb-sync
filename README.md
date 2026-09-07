@@ -116,7 +116,7 @@ jobs:
 Download output files from a completed Kaggle kernel.
 
 ```
-kaggle-wandb-sync output [KERNEL_ID] [OPTIONS]
+kaggle-wandb-sync output KERNEL_ID [OPTIONS]
 ```
 
 | Option | Default | Description |
@@ -128,7 +128,7 @@ kaggle-wandb-sync output [KERNEL_ID] [OPTIONS]
 Poll a Kaggle kernel until it reaches COMPLETE, ERROR, or CANCEL.
 
 ```
-kaggle-wandb-sync poll [KERNEL_ID] [OPTIONS]
+kaggle-wandb-sync poll KERNEL_ID [OPTIONS]
 ```
 
 | Option | Default | Description |
@@ -173,7 +173,7 @@ kaggle-wandb-sync run [DIRECTORY] [OPTIONS]
 Log Kaggle submission scores to a W&B run.
 
 ```
-kaggle-wandb-sync score [RUN_ID] [OPTIONS]
+kaggle-wandb-sync score RUN_ID [OPTIONS]
 ```
 
 | Option | Default | Description |
@@ -197,17 +197,20 @@ kaggle-wandb-sync sync [OUTPUT_DIR] [OPTIONS]
 
 Behaviour that is not visible in the option tables above:
 
+- **`run` is the one to reach for** — it is the full pipeline (push → poll → output → sync → score). The generated list above is alphabetical, so it does not read in that order.
 - **`push`** waits for any currently running kernel to finish before pushing, which prevents 409 Conflict errors.
+- **`run`'s** `--max-attempts` (60) times `--poll-interval` (30s) is the give-up point: 30 minutes by default. `--skip-push` is for a notebook that has already finished running.
 - **`poll`** exits with code 1 if the kernel finishes with ERROR or CANCEL. Since v0.1.5 it also downloads the kernel log on those outcomes and prints stdout plus the last 30 stderr lines, so you can diagnose a failure without opening the Kaggle UI.
 - **`sync`** finds every `offline-run-*` directory under the output dir and runs `wandb sync` on each.
-- **`score`** takes a full run URL, an `entity/project/id` path, or a bare id with `--project`:
+- **`score`** takes `--metric KEY=VALUE` (repeatable), and a full run URL, an `entity/project/id` path, or a bare id with `--project`:
 
   ```bash
   kaggle-wandb-sync score https://wandb.ai/me/my-proj/runs/abc123 --score 0.127 --rank 200
   ```
 
 > The section above `Command notes` is generated from the Click definitions by
-> `scripts/gen_commands_doc.py` and rewritten by CI on every push. Put anything
+> `scripts/gen_commands_doc.py`, and CI rewrites it on every push that changes
+> `src/`. It is ordered alphabetically, not by pipeline order. Put anything
 > hand-written here, below `<!-- commands:end -->`, or it will be overwritten.
 
 ## Known Issues
