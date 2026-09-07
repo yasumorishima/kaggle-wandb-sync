@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import click
-from kaggle_wandb_sync.cli import cli
+from kaggle_wandb_sync.cli import main
 
 
 BEGIN_MARKER = "<!-- commands:start -->"
@@ -90,5 +90,5 @@ def update_readme(readme_path: Path, new_section: str) -> bool:
 
 if __name__ == "__main__":
     readme = Path(__file__).parent.parent / "README.md"
-    section = generate_commands_section(cli)
+    section = generate_commands_section(main)
     update_readme(readme, section)

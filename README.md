@@ -111,7 +111,48 @@ jobs:
 
 <!-- commands:start -->
 
-### `run` — Full pipeline (recommended)
+### `kaggle-wandb-sync output`
+
+Download output files from a completed Kaggle kernel.
+
+```
+kaggle-wandb-sync output [KERNEL_ID] [OPTIONS]
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `--output-dir`, `-o` | `./kaggle_output` | Directory to save downloaded files. |
+
+### `kaggle-wandb-sync poll`
+
+Poll a Kaggle kernel until it reaches COMPLETE, ERROR, or CANCEL.
+
+```
+kaggle-wandb-sync poll [KERNEL_ID] [OPTIONS]
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `--interval` | `30` | Seconds between status checks. |
+| `--max-attempts` | `60` | Maximum number of status checks before giving up. |
+
+### `kaggle-wandb-sync push`
+
+Push a Kaggle Notebook to Kaggle.
+
+```
+kaggle-wandb-sync push [DIRECTORY] [OPTIONS]
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `--wait-interval` | `30` | Seconds between status checks when waiting for a running kernel. |
+| `--max-wait` | `20` | Maximum number of status checks before giving up on waiting. |
+| `--dry-run` |  | Show the command without executing it. |
+
+### `kaggle-wandb-sync run`
+
+Run the full pipeline: push → poll → output → wandb sync → wait for submission → record LB score.
 
 ```
 kaggle-wandb-sync run [DIRECTORY] [OPTIONS]
@@ -119,64 +160,55 @@ kaggle-wandb-sync run [DIRECTORY] [OPTIONS]
 
 | Option | Default | Description |
 |---|---|---|
-| `--kernel-id`, `-k` | from metadata | Kernel ID (`username/slug`) |
-| `--output-dir`, `-o` | `./kaggle_output` | Directory for downloaded files |
-| `--poll-interval` | `30` | Seconds between status checks |
-| `--max-attempts` | `60` | Max poll attempts (30min total) |
-| `--skip-push` | off | Skip push step (use when notebook has already finished running) |
-| `--skip-sync` | off | Download output only, skip W&B sync |
-| `--competition-slug` | — | Competition slug to auto-record LB score after browser submission (e.g. `march-machine-learning-mania-2026`) |
+| `--kernel-id`, `-k` |  | Kernel ID (default: read from kernel-metadata.json). |
+| `--output-dir`, `-o` | `./kaggle_output` | Directory to save downloaded output. |
+| `--poll-interval` | `30` | Seconds between status checks. |
+| `--max-attempts` | `60` | Maximum poll attempts. |
+| `--skip-push` |  | Skip push (re-run output+sync only). |
+| `--skip-sync` |  | Skip wandb sync (download output only). |
+| `--competition-slug` |  | Competition slug to auto-record LB score after submission (e.g. march-machine-learning-mania-2026). |
 
-### `push` — Push notebook
+### `kaggle-wandb-sync score`
 
-```
-kaggle-wandb-sync push [DIRECTORY] [OPTIONS]
-```
-
-Waits for any currently running kernel to finish before pushing (prevents 409 Conflict errors).
-
-### `poll` — Wait for completion
+Log Kaggle submission scores to a W&B run.
 
 ```
-kaggle-wandb-sync poll KERNEL_ID [--interval 30] [--max-attempts 60]
+kaggle-wandb-sync score [RUN_ID] [OPTIONS]
 ```
 
-Exits with code 1 if the kernel finishes with ERROR or CANCEL.
+| Option | Default | Description |
+|---|---|---|
+| `--project`, `-p` |  | W&B project path (entity/project). Required if RUN_ID is a bare ID. |
+| `--score` |  | Kaggle public LB score. |
+| `--rank` |  | Leaderboard rank. |
+| `--metric`, `-m` |  | Additional metric (can be repeated, e.g. -m auc=0.95 -m loss=0.3). |
 
-**v0.1.5+:** On ERROR or CANCEL, automatically downloads the kernel log and prints stdout + last 30 stderr lines, so you can diagnose failures without opening the Kaggle UI.
+### `kaggle-wandb-sync sync`
 
-### `output` — Download output
-
-```
-kaggle-wandb-sync output KERNEL_ID [--output-dir ./kaggle_output]
-```
-
-### `sync` — Sync to W&B
-
-```
-kaggle-wandb-sync sync [OUTPUT_DIR]
-```
-
-Finds all `offline-run-*` directories and runs `wandb sync` on each.
-
-### `score` — Record Kaggle LB score to W&B
+Sync W&B offline runs found in OUTPUT_DIR to W&B cloud.
 
 ```
-kaggle-wandb-sync score RUN_ID [OPTIONS]
-```
-
-| Option | Description |
-|---|---|
-| `--score` | Kaggle public LB score (float) |
-| `--rank` | Leaderboard rank (int) |
-| `--metric KEY=VALUE` | Additional metric (repeatable) |
-| `--project entity/project` | W&B project path (for bare run IDs) |
-
-```bash
-kaggle-wandb-sync score https://wandb.ai/me/my-proj/runs/abc123 --score 0.127 --rank 200
+kaggle-wandb-sync sync [OUTPUT_DIR] [OPTIONS]
 ```
 
 <!-- commands:end -->
+
+### Command notes
+
+Behaviour that is not visible in the option tables above:
+
+- **`push`** waits for any currently running kernel to finish before pushing, which prevents 409 Conflict errors.
+- **`poll`** exits with code 1 if the kernel finishes with ERROR or CANCEL. Since v0.1.5 it also downloads the kernel log on those outcomes and prints stdout plus the last 30 stderr lines, so you can diagnose a failure without opening the Kaggle UI.
+- **`sync`** finds every `offline-run-*` directory under the output dir and runs `wandb sync` on each.
+- **`score`** takes a full run URL, an `entity/project/id` path, or a bare id with `--project`:
+
+  ```bash
+  kaggle-wandb-sync score https://wandb.ai/me/my-proj/runs/abc123 --score 0.127 --rank 200
+  ```
+
+> The section above `Command notes` is generated from the Click definitions by
+> `scripts/gen_commands_doc.py` and rewritten by CI on every push. Put anything
+> hand-written here, below `<!-- commands:end -->`, or it will be overwritten.
 
 ## Known Issues
 
