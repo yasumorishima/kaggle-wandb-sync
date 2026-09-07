@@ -4,6 +4,7 @@ import json
 
 from click.testing import CliRunner
 
+from kaggle_wandb_sync import __version__
 from kaggle_wandb_sync.cli import main
 from kaggle_wandb_sync._utils import parse_kernel_status, is_terminal, normalize_path
 from kaggle_wandb_sync.commands.score import _parse_run_path
@@ -15,7 +16,9 @@ runner = CliRunner()
 def test_version():
     result = runner.invoke(main, ["--version"])
     assert result.exit_code == 0
-    assert "0.1.9" in result.output
+    # Assert against the package version, not a literal: a release bump
+    # must not require editing this test.
+    assert __version__ in result.output
 
 
 def test_help():
