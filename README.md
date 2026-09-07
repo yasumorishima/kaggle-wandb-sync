@@ -181,7 +181,7 @@ kaggle-wandb-sync score [RUN_ID] [OPTIONS]
 | `--project`, `-p` |  | W&B project path (entity/project). Required if RUN_ID is a bare ID. |
 | `--score` |  | Kaggle public LB score. |
 | `--rank` |  | Leaderboard rank. |
-| `--metric`, `-m` |  | Additional metric (can be repeated, e.g. -m auc=0.95 -m loss=0.3). |
+| `--metric`, `-m` | `Sentinel.UNSET` | Additional metric (can be repeated, e.g. -m auc=0.95 -m loss=0.3). |
 
 ### `kaggle-wandb-sync sync`
 
