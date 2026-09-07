@@ -24,8 +24,24 @@ END_MARKER = "<!-- commands:end -->"
 
 def option_row(param: click.Option) -> str:
     names = ", ".join(f"`{n}`" for n in param.opts)
-    default = f" (default: `{param.default}`)" if param.default not in (None, False) else ""
-    return f"| {names} | {param.help or ''}{default} |"
+    return f"| {names} | {param.help or ''}{_default_suffix(param)} |"
+
+
+def _default_suffix(param: click.Option) -> str:
+    """Render a default only when there is a real one to show.
+
+    Click >= 8.3 uses an internal sentinel (`Sentinel.UNSET`) instead of None
+    for "no default", so the old `not in (None, False)` test printed
+    "(default: `Sentinel.UNSET`)" into the README on any runner with a newer
+    click than the developer had. Allow-list the types we can actually render
+    instead of trying to enumerate the sentinels.
+    """
+    d = param.default
+    if d is None or d is False or param.multiple or callable(d):
+        return ""
+    if not isinstance(d, (str, int, float, bool)):
+        return ""
+    return f" (default: `{d}`)"
 
 
 def generate_commands_section(cmd_group: click.Group) -> str:
