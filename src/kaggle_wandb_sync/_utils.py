@@ -176,9 +176,10 @@ def wait_and_record_score(
         print(f"  submitted = True")
         notify_discord(
             f"✅ **スコア記録完了！**\nCompetition: `{competition_slug}`\n"
-            # run.url comes from the W&B client's configured host, so this
-            # survives the 2026-09-30 domain move; a hardcoded wandb.ai
-            # would only keep working via the redirect.
+            # run.url is derived by the installed wandb client from its own
+            # base URL (api_to_app_url, or WANDB_APP_URL), so it is as current
+            # as that client -- unlike a hardcoded wandb.ai, which after the
+            # 2026-09-30 domain move only keeps working via the redirect.
             f"Score: `{score}`\nW&B: {run.url}"
         )
     except Exception as e:
