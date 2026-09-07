@@ -27,21 +27,31 @@ def option_row(param: click.Option) -> str:
     return f"| {names} | {param.help or ''}{_default_suffix(param)} |"
 
 
-def _default_suffix(param: click.Option) -> str:
-    """Render a default only when there is a real one to show.
+def _renderable_default(param: click.Option):
+    """The default to show, or None when there is nothing worth showing.
 
     Click >= 8.3 uses an internal sentinel (`Sentinel.UNSET`) instead of None
     for "no default", so the old `not in (None, False)` test printed
-    "(default: `Sentinel.UNSET`)" into the README on any runner with a newer
-    click than the developer had. Allow-list the types we can actually render
-    instead of trying to enumerate the sentinels.
+    `Sentinel.UNSET` into the README on any runner with a newer click than the
+    developer had. Allow-list the types we can actually render instead of
+    trying to enumerate the sentinels.
     """
     d = param.default
     if d is None or d is False or param.multiple or callable(d):
-        return ""
+        return None
     if not isinstance(d, (str, int, float, bool)):
-        return ""
-    return f" (default: `{d}`)"
+        return None
+    return d
+
+
+def _default_suffix(param: click.Option) -> str:
+    d = _renderable_default(param)
+    return "" if d is None else f" (default: `{d}`)"
+
+
+def _default_cell(param: click.Option) -> str:
+    d = _renderable_default(param)
+    return "" if d is None else f"`{d}`"
 
 
 def generate_commands_section(cmd_group: click.Group) -> str:
@@ -62,7 +72,7 @@ def generate_commands_section(cmd_group: click.Group) -> str:
             lines.append("| Option | Default | Description |")
             lines.append("|---|---|---|")
             for opt in options:
-                default = f"`{opt.default}`" if opt.default not in (None, False) else ""
+                default = _default_cell(opt)
                 names = ", ".join(f"`{n}`" for n in opt.opts)
                 lines.append(f"| {names} | {default} | {opt.help or ''} |")
             lines.append("")
